@@ -18,27 +18,26 @@ class taxCalculator(object):
 
 	def calculateTax(self):
 		for item in self.items:
-			self.taxedItems.append(self.calculateSingleTax(item))
+			taxedItem = self.calculateSingleTax(item)
+			self.taxedItems.append(taxedItem)
 
 	def calculateSingleTax(self, item):
-		if self.mustBeTaxed(item):
-			price = re.findall('\d+.\d+', item)
-			try:
-				# sobsitute price and replace ' at ' with ': '
-				return item.replace(' at ' + price[0], ': ' + self.taxPrice(price[0]), 1)
-			except Exception as e:
-				return item
-		else:
-			# if item does not have taxes still needs to change the ' at '
-			return item.replace(' at ', ': ', 1)
+		itemWithoutAt = self.replaceAt(item)
+		if self.mustBeTaxed(itemWithoutAt):
+			return self.taxImportation(self.taxPrice(itemWithoutAt, 0.1))
+		return self.taxImportation(itemWithoutAt)
 
-	def taxPrice(self, priceString):
+	def taxPrice(self, item, tax):
+		price = re.findall('\d+.\d+', item)
 		# Convert string into float, execute 10% tax, save tax, back to string
-		priceFloat = float(priceString)
-		taxOnPrice = priceFloat * 0.1
-		self.salesTaxes += taxOnPrice
-		taxedPrice = round(priceFloat * 1.1, 2)
-		return str(taxedPrice)
+		try:
+			priceFloat = float(price[0])
+			taxOnPrice = priceFloat * tax
+			self.salesTaxes += taxOnPrice
+			taxedPrice = round(priceFloat * (1 + tax), 2)
+			return item.replace(price[0], str("%.2f" % taxedPrice), 1)
+		except:
+			return item
 
 	def mustBeTaxed(self, item):
 		freeTaxRE = 'books?|chocolates?|headache|pills?'
@@ -47,6 +46,13 @@ class taxCalculator(object):
 			return False
 		return True
 
+	def taxImportation(self, item):
+		if len(re.findall('imported', item, flags=re.IGNORECASE)) > 0:
+			return self.taxPrice(item, 0.05)
+		return item
+
+	def replaceAt(self, item):
+		return item.replace(' at ', ': ', 1)
 
 # UnitTest for the class taxCalculator
 class taxTest(unittest.TestCase):
@@ -78,5 +84,11 @@ class taxTest(unittest.TestCase):
 		tax.addItem('1 book at 12.49')
 		tax.calculateTax()
 		self.assertEqual(tax.taxedItems[0], '1 book: 12.49')
+
+	def test_imported_items_should_have_more_tax(self):
+		tax = taxCalculator()
+		tax.addItem('1 imported box of chocolates at 10.00')
+		tax.calculateTax()
+		self.assertEqual(tax.taxedItems[0], '1 imported box of chocolates: 10.50')
 
 unittest.main()
