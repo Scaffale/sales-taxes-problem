@@ -2,10 +2,10 @@ import re
 import unittest
 
 class taxCalculator(object):
-	# Items to tax
 	items = []
 	taxedItems = []
 	salesTaxes = 0.0
+	total = 0.0
 
 	def addItem(self, item):
 		self.items.append(item)
@@ -14,6 +14,9 @@ class taxCalculator(object):
 		for item in self.items:
 			taxedItem = self.calculateSingleTax(item)
 			self.taxedItems.append(taxedItem)
+		salesTaxes = self.roundToFive(self.salesTaxes)
+		self.taxedItems.append('Sales Taxes: ' + str("%.2f" % salesTaxes))
+		self.taxedItems.append('Total: ' + str("%.2f" % self.total))
 
 	def calculateSingleTax(self, item):
 		itemWithoutAt = self.replaceAt(item)
@@ -34,6 +37,7 @@ class taxCalculator(object):
 			taxedPrice = round(priceFloat * (1 + tax), 2)
 			if self.isImported(item):
 				taxedPrice = self.roundToFive(taxedPrice)
+			self.total += taxedPrice
 			return item.replace(price[0], str("%.2f" % taxedPrice), 1)
 		except:
 			return item
@@ -49,9 +53,10 @@ class taxCalculator(object):
 		twoDecimalPrecision = (number * 100) % 10
 		if twoDecimalPrecision == 5 or twoDecimalPrecision == 0:
 			return number
-		if twoDecimalPrecision == 2 or twoDecimalPrecision == 6:
-			return self.roundToFive(number + 0.03)
-		return self.roundToFive(number + 0.01)
+		if twoDecimalPrecision < 5:
+			return number - twoDecimalPrecision / 100 + 0.05
+		else:
+			return number - twoDecimalPrecision / 100 + 0.1
 
 	def replaceAt(self, item):
 		return item.replace(' at ', ': ', 1)
@@ -60,6 +65,7 @@ class taxCalculator(object):
 		self.items = []
 		self.taxedItems = []
 		self.salesTaxes = 0.0
+		self.total = 0.0
 
 # UnitTest for the class taxCalculator
 class taxTest(unittest.TestCase):
@@ -115,5 +121,47 @@ class taxTest(unittest.TestCase):
 		self.tax.addItem('1 box of imported chocolates at 11.25')
 		self.tax.calculateTax()
 		self.assertEqual(self.tax.taxedItems[0], '1 box of imported chocolates: 11.85')
+
+	def test_Input_1(self):
+		self.tax.clear()
+		self.tax.addItem('1 book at 12.49')
+		self.tax.addItem('1 music CD at 14.99')
+		self.tax.addItem('1 chocolate bar at 0.85')
+		self.tax.calculateTax()
+		results = []
+		results.append('1 book: 12.49')
+		results.append('1 music CD: 16.49')
+		results.append('1 chocolate bar: 0.85')
+		results.append('Sales Taxes: 1.50')
+		results.append('Total: 29.83')
+		self.assertEqual(self.tax.taxedItems, results)
+
+	def test_Input_2(self):
+		self.tax.clear()
+		self.tax.addItem('1 imported box of chocolates at 10.00')
+		self.tax.addItem('1 imported bottle of perfume at 47.50')
+		self.tax.calculateTax()
+		results = []
+		results.append('1 imported box of chocolates: 10.50')
+		results.append('1 imported bottle of perfume: 54.65')
+		results.append('Sales Taxes: 7.65')
+		results.append('Total: 65.15')
+		self.assertEqual(self.tax.taxedItems, results)
+
+	# def test_Input_3(self):
+	# 	self.tax.clear()
+	# 	self.tax.addItem('1 imported bottle of perfume at 27.99')
+	# 	self.tax.addItem('1 bottle of perfume at 18.99')
+	# 	self.tax.addItem('1 packet of headache pills at 9.75')
+	# 	self.tax.addItem('1 box of imported chocolates at 11.25')
+	# 	self.tax.calculateTax()
+	# 	results = []
+	# 	results.append('1 imported bottle of perfume: 32.19')
+	# 	results.append('1 bottle of perfume: 20.89')
+	# 	results.append('1 packet of headache pills: 9.75')
+	# 	results.append('1 imported box of chocolates: 11.85')
+	# 	results.append('Sales Taxes: 6.70')
+	# 	results.append('Total: 74.68')
+	# 	self.assertEqual(self.tax.taxedItems, results)
 
 unittest.main()
