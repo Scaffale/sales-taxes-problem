@@ -67,30 +67,30 @@ unittest.main()
 ```
 
 The object works this way:
-1. Init
-	```
-	tax = taxCalculator()
-	```
-2. Add items (add Strings)
-	```
-	tax.addItem('1 imported bottle of perfume at 47.50')
-	...
-	```
-3. Calculate tax
-	```
-	tax.calculateTax()
-	```
-4. Read the data (it's an array of Strings)
-	```
-	tax.taxedItems
-	```
-	Note that the *calculateTax()* method adds two lines to the *taxedItems* array:
-	```
-	Sales Taxes: 6.70
-	Total: 74.68
-	```
-5. Clear the data
-	```
-	tax.clear()
-	```
+* Init
+```
+tax = taxCalculator()
+```
+* Add items (add Strings)
+```
+tax.addItem('1 imported bottle of perfume at 47.50')
+...
+```
+* Calculate tax
+```
+tax.calculateTax()
+```
+* Read the data (it's an array of Strings)
+```
+tax.taxedItems
+```
+Note that the *calculateTax()* method adds two lines to the *taxedItems* array:
+```
+Sales Taxes: 6.70
+Total: 74.68
+```
+* Clear the data
+```
+tax.clear()
+```
 This is essential if you run *calculateTax()* because the method just add lines to the array, and it does not clear it
