@@ -58,7 +58,7 @@ class taxCalculator(object):
 
 	def roundToFive(self, number):
 		twoDecimalPrecision = (number * 100) % 10
-		if twoDecimalPrecision == 5 or twoDecimalPrecision == 0:
+		if twoDecimalPrecision > 5 or twoDecimalPrecision == 0:
 			return number
 		return number - twoDecimalPrecision / 100 + (0.05 if twoDecimalPrecision < 5 else 0.1)
 
