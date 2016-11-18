@@ -60,7 +60,7 @@ To run it:
 python taxes-calculator.py
 ```
 
-## How it works
+## How to run it
 In the code there are unitTest, to avoid the tests comment the line (should be the last one)
 ```
 unittest.main()
@@ -94,3 +94,17 @@ Total: 74.68
 tax.clear()
 ```
 This is essential if you run *calculateTax()* because the method just add lines to the array, and it does not clear it
+
+## How it internally works
+Once you add the item such as ```1 box of imported chocolates at 11.25``` if you run the calculateTax method this happen:
+1. Replace the *' at '* part of the item with *': '*
+2. If the item has to be taxed (so if the string does not contains *book*, *chocolate*, *pill* or *headache*) add 10% tax
+3. If the item is imported (so if the string contains the word *imported*) add 5% tax
+4. Modify the item price based on the tax
+5. If the item is imported round the price to nearest 0.05 value
+6. Arrange the item in order to have the word *imported* right after the number
+So at the end you will have the item like ```1 imported box of chocolates: 11.85```
+
+### Remember that:
+If you run *calculateTax()* the array of taxed items will have at the end the two lines for **Sales Taxes** and **Total**.
+The method *clear()* will clear all items

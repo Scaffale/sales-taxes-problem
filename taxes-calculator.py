@@ -20,7 +20,7 @@ class taxCalculator(object):
 		for item in self.items:
 			taxedItem = self.calculateSingleTax(item)
 			self.taxedItems.append(taxedItem)
-		self.taxedItems.append('Sales Taxes: ' + self.numberToString(self.roundToFive(self.salesTaxes)))
+		self.taxedItems.append('Sales Taxes: ' + self.numberToString(self.salesTaxes))
 		self.taxedItems.append('Total: ' + self.numberToString(self.total))
 
 	def calculateSingleTax(self, item):
@@ -37,10 +37,11 @@ class taxCalculator(object):
 		# Convert string into float, execute tax%, save, back to string
 		try:
 			priceFloat = float(price[0])
-			self.salesTaxes += priceFloat * tax
-			taxedPrice = round(priceFloat * (1 + tax), 2)
+			totalTax = priceFloat * tax
 			if self.isImported(item):
-				taxedPrice = self.roundToFive(taxedPrice)
+				totalTax = self.roundToFive(totalTax)
+			self.salesTaxes += totalTax
+			taxedPrice = round(priceFloat + totalTax, 2)
 			self.total += taxedPrice
 			return self.arrangeImported(item.replace(price[0], self.numberToString(taxedPrice), 1))
 		except:
@@ -58,7 +59,7 @@ class taxCalculator(object):
 
 	def roundToFive(self, number):
 		twoDecimalPrecision = (number * 100) % 10
-		if twoDecimalPrecision > 5 or twoDecimalPrecision == 0:
+		if twoDecimalPrecision == 5 or twoDecimalPrecision == 0:
 			return number
 		return number - twoDecimalPrecision / 100 + (0.05 if twoDecimalPrecision < 5 else 0.1)
 
