@@ -6,6 +6,9 @@ class taxCalculator(object):
 	taxedItems = []
 	salesTaxes = 0.0
 	total = 0.0
+	# 'Costants' for the taxes
+	salesTax = 0.1
+	importationTax = 0.05
 
 	def addItem(self, item):
 		self.items.append(item)
@@ -27,9 +30,9 @@ class taxCalculator(object):
 		itemWithoutAt = Helper.replaceAt(item)
 		tax = 0.0
 		if Helper.mustBeTaxed(itemWithoutAt):
-			tax += 0.1
+			tax += self.salesTax
 		if Helper.isImported(itemWithoutAt):
-			tax += 0.05
+			tax += self.importationTax
 		return self.taxPrice(itemWithoutAt, tax)
 
 	def taxPrice(self, item, tax):
@@ -45,7 +48,7 @@ class taxCalculator(object):
 			self.total += taxedPrice
 			return Helper.arrangeImported(item.replace(price[0], Helper.numberToString(taxedPrice), 1))
 		except:
-			return item
+			return item # In case the string is not of the correct format nothing happens
 
 class Helper(object):
 	@staticmethod
@@ -76,12 +79,12 @@ class Helper(object):
 	def arrangeImported(item):
 		number = re.findall('\d+ ', item)
 		imported = re.findall('imported ', item, flags=re.IGNORECASE)
-		try:
+		try: # from '1 box of imported chocolates at 11.25' to '1 imported box of chocolates: 11.25'
 			if len(number) > 0:
 				return item.replace(imported[0], '', 1).replace(number[0], number[0] + imported[0], 1)
 			return imported[0] + item.replace(imported[0], '', 1)
 		except:
-			return item
+			return item # In case the string is not properly fomratted
 
 # UnitTest for the class taxCalculator
 class taxTest(unittest.TestCase):
