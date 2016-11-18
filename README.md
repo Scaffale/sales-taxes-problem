@@ -97,12 +97,12 @@ This is essential if you run *calculateTax()* because the method just add lines 
 
 ## How it internally works
 Once you add the item such as ```1 box of imported chocolates at 11.25``` if you run the calculateTax method this happen:
-1. Replace the *' at '* part of the item with *': '*
-2. If the item has to be taxed (so if the string does not contains *book*, *chocolate*, *pill* or *headache*) add 10% tax
-3. If the item is imported (so if the string contains the word *imported*) add 5% tax
-4. Modify the item price based on the tax
-5. If the item is imported round the price to nearest 0.05 value
-6. Arrange the item in order to have the word *imported* right after the number
+* Replace the *' at '* part of the item with *': '*
+* If the item has to be taxed (so if the string does not contains *book*, *chocolate*, *pill* or *headache*) add 10% tax
+* If the item is imported (so if the string contains the word *imported*) add 5% tax
+* Modify the item price based on the tax
+* If the item is imported round the price to nearest 0.05 value
+* Arrange the item in order to have the word *imported* right after the number
 So at the end you will have the item like ```1 imported box of chocolates: 11.85```
 
 ### Remember that:
