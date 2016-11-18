@@ -20,15 +20,15 @@ class taxCalculator(object):
 		for item in self.items:
 			taxedItem = self.calculateSingleTax(item)
 			self.taxedItems.append(taxedItem)
-		self.taxedItems.append('Sales Taxes: ' + self.numberToString(self.salesTaxes))
-		self.taxedItems.append('Total: ' + self.numberToString(self.total))
+		self.taxedItems.append('Sales Taxes: ' + Helper.numberToString(self.salesTaxes))
+		self.taxedItems.append('Total: ' + Helper.numberToString(self.total))
 
 	def calculateSingleTax(self, item):
-		itemWithoutAt = self.replaceAt(item)
+		itemWithoutAt = Helper.replaceAt(item)
 		tax = 0.0
-		if self.mustBeTaxed(itemWithoutAt):
+		if Helper.mustBeTaxed(itemWithoutAt):
 			tax += 0.1
-		if self.isImported(itemWithoutAt):
+		if Helper.isImported(itemWithoutAt):
 			tax += 0.05
 		return self.taxPrice(itemWithoutAt, tax)
 
@@ -38,16 +38,42 @@ class taxCalculator(object):
 		try:
 			priceFloat = float(price[0])
 			totalTax = priceFloat * tax
-			if self.isImported(item):
-				totalTax = self.roundToFive(totalTax)
+			if Helper.isImported(item):
+				totalTax = Helper.roundToFive(totalTax)
 			self.salesTaxes += totalTax
 			taxedPrice = round(priceFloat + totalTax, 2)
 			self.total += taxedPrice
-			return self.arrangeImported(item.replace(price[0], self.numberToString(taxedPrice), 1))
+			return Helper.arrangeImported(item.replace(price[0], Helper.numberToString(taxedPrice), 1))
 		except:
 			return item
 
-	def arrangeImported(self, item):
+class Helper(object):
+	@staticmethod
+	def numberToString(numb):
+		return str("%.2f" % numb)
+	
+	@staticmethod
+	def replaceAt(item):
+		return item.replace(' at ', ': ', 1)
+
+	@staticmethod
+	def roundToFive(number):
+		twoDecimalPrecision = (number * 100) % 10
+		if twoDecimalPrecision == 5 or twoDecimalPrecision == 0:
+			return number
+		return number - twoDecimalPrecision / 100 + (0.05 if twoDecimalPrecision < 5 else 0.1)
+
+	@staticmethod
+	def mustBeTaxed(item):
+		freeTaxRE = 'books?|chocolates?|headache|pills?'
+		return len(re.findall(freeTaxRE, item, flags=re.IGNORECASE)) == 0
+
+	@staticmethod
+	def isImported(item):
+		return len(re.findall('imported', item, flags=re.IGNORECASE)) > 0
+
+	@staticmethod
+	def arrangeImported(item):
 		number = re.findall('\d+ ', item)
 		imported = re.findall('imported ', item, flags=re.IGNORECASE)
 		try:
@@ -56,25 +82,6 @@ class taxCalculator(object):
 			return imported[0] + item.replace(imported[0], '', 1)
 		except:
 			return item
-
-	def roundToFive(self, number):
-		twoDecimalPrecision = (number * 100) % 10
-		if twoDecimalPrecision == 5 or twoDecimalPrecision == 0:
-			return number
-		return number - twoDecimalPrecision / 100 + (0.05 if twoDecimalPrecision < 5 else 0.1)
-
-	def numberToString(self, numb):
-		return str("%.2f" % numb)
-
-	def replaceAt(self, item):
-		return item.replace(' at ', ': ', 1)
-
-	def mustBeTaxed(self, item):
-		freeTaxRE = 'books?|chocolates?|headache|pills?'
-		return len(re.findall(freeTaxRE, item, flags=re.IGNORECASE)) == 0
-
-	def isImported(self, item):
-		return len(re.findall('imported', item, flags=re.IGNORECASE)) > 0
 
 # UnitTest for the class taxCalculator
 class taxTest(unittest.TestCase):
