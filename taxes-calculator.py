@@ -14,9 +14,8 @@ class taxCalculator(object):
 		for item in self.items:
 			taxedItem = self.calculateSingleTax(item)
 			self.taxedItems.append(taxedItem)
-		salesTaxes = self.roundToFive(self.salesTaxes)
-		self.taxedItems.append('Sales Taxes: ' + str("%.2f" % salesTaxes))
-		self.taxedItems.append('Total: ' + str("%.2f" % self.total))
+		self.taxedItems.append('Sales Taxes: ' + self.numberToString(self.roundToFive(self.salesTaxes)))
+		self.taxedItems.append('Total: ' + self.numberToString(self.total))
 
 	def calculateSingleTax(self, item):
 		itemWithoutAt = self.replaceAt(item)
@@ -32,31 +31,27 @@ class taxCalculator(object):
 		# Convert string into float, execute tax%, save, back to string
 		try:
 			priceFloat = float(price[0])
-			taxOnPrice = priceFloat * tax
-			self.salesTaxes += taxOnPrice
+			self.salesTaxes += priceFloat * tax
 			taxedPrice = round(priceFloat * (1 + tax), 2)
 			if self.isImported(item):
 				taxedPrice = self.roundToFive(taxedPrice)
 			self.total += taxedPrice
-			return item.replace(price[0], str("%.2f" % taxedPrice), 1)
+			return self.arrangeImported(item.replace(price[0], self.numberToString(taxedPrice), 1))
 		except:
 			return item
 
 	def mustBeTaxed(self, item):
 		freeTaxRE = 'books?|chocolates?|headache|pills?'
-		return (len(re.findall(freeTaxRE, item, flags=re.IGNORECASE)) == 0)
+		return len(re.findall(freeTaxRE, item, flags=re.IGNORECASE)) == 0
 
 	def isImported(self, item):
-		return (len(re.findall('imported', item, flags=re.IGNORECASE)) > 0)
+		return len(re.findall('imported', item, flags=re.IGNORECASE)) > 0
 
 	def roundToFive(self, number):
 		twoDecimalPrecision = (number * 100) % 10
 		if twoDecimalPrecision == 5 or twoDecimalPrecision == 0:
 			return number
-		if twoDecimalPrecision < 5:
-			return number - twoDecimalPrecision / 100 + 0.05
-		else:
-			return number - twoDecimalPrecision / 100 + 0.1
+		return number - twoDecimalPrecision / 100 + (0.05 if twoDecimalPrecision < 5 else 0.1)
 
 	def replaceAt(self, item):
 		return item.replace(' at ', ': ', 1)
@@ -66,6 +61,19 @@ class taxCalculator(object):
 		self.taxedItems = []
 		self.salesTaxes = 0.0
 		self.total = 0.0
+
+	def numberToString(self, numb):
+		return str("%.2f" % numb)
+
+	def arrangeImported(self, item):
+		number = re.findall('\d+ ', item)
+		imported = re.findall('imported ', item, flags=re.IGNORECASE)
+		try:
+			if len(number) > 0:
+				return item.replace(imported[0], '', 1).replace(number[0], number[0] + imported[0], 1)
+			return imported[0] + item.replace('', imported[0], 1)
+		except:
+			return item
 
 # UnitTest for the class taxCalculator
 class taxTest(unittest.TestCase):
@@ -120,7 +128,13 @@ class taxTest(unittest.TestCase):
 		self.tax.clear()
 		self.tax.addItem('1 box of imported chocolates at 11.25')
 		self.tax.calculateTax()
-		self.assertEqual(self.tax.taxedItems[0], '1 box of imported chocolates: 11.85')
+		self.assertEqual(self.tax.taxedItems[0], '1 imported box of chocolates: 11.85')
+
+	def test_imported_items_should_move_the_imported_word(self):
+		self.tax.clear()
+		self.tax.addItem('1 box of imported chocolates at 11.25')
+		self.tax.calculateTax()
+		self.assertEqual(self.tax.taxedItems[0], '1 imported box of chocolates: 11.85')
 
 	def test_Input_1(self):
 		self.tax.clear()
@@ -148,20 +162,20 @@ class taxTest(unittest.TestCase):
 		results.append('Total: 65.15')
 		self.assertEqual(self.tax.taxedItems, results)
 
-	# def test_Input_3(self):
-	# 	self.tax.clear()
-	# 	self.tax.addItem('1 imported bottle of perfume at 27.99')
-	# 	self.tax.addItem('1 bottle of perfume at 18.99')
-	# 	self.tax.addItem('1 packet of headache pills at 9.75')
-	# 	self.tax.addItem('1 box of imported chocolates at 11.25')
-	# 	self.tax.calculateTax()
-	# 	results = []
-	# 	results.append('1 imported bottle of perfume: 32.19')
-	# 	results.append('1 bottle of perfume: 20.89')
-	# 	results.append('1 packet of headache pills: 9.75')
-	# 	results.append('1 imported box of chocolates: 11.85')
-	# 	results.append('Sales Taxes: 6.70')
-	# 	results.append('Total: 74.68')
-	# 	self.assertEqual(self.tax.taxedItems, results)
+	def test_Input_3(self):
+		self.tax.clear()
+		self.tax.addItem('1 imported bottle of perfume at 27.99')
+		self.tax.addItem('1 bottle of perfume at 18.99')
+		self.tax.addItem('1 packet of headache pills at 9.75')
+		self.tax.addItem('1 box of imported chocolates at 11.25')
+		self.tax.calculateTax()
+		results = []
+		results.append('1 imported bottle of perfume: 32.19')
+		results.append('1 bottle of perfume: 20.89')
+		results.append('1 packet of headache pills: 9.75')
+		results.append('1 imported box of chocolates: 11.85')
+		results.append('Sales Taxes: 6.70')
+		results.append('Total: 74.68')
+		self.assertEqual(self.tax.taxedItems, results)
 
 unittest.main()
