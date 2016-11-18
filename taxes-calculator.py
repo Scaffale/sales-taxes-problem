@@ -10,6 +10,12 @@ class taxCalculator(object):
 	def addItem(self, item):
 		self.items.append(item)
 
+	def clear(self):
+		self.items = []
+		self.taxedItems = []
+		self.salesTaxes = 0.0
+		self.total = 0.0
+
 	def calculateTax(self):
 		for item in self.items:
 			taxedItem = self.calculateSingleTax(item)
@@ -40,12 +46,15 @@ class taxCalculator(object):
 		except:
 			return item
 
-	def mustBeTaxed(self, item):
-		freeTaxRE = 'books?|chocolates?|headache|pills?'
-		return len(re.findall(freeTaxRE, item, flags=re.IGNORECASE)) == 0
-
-	def isImported(self, item):
-		return len(re.findall('imported', item, flags=re.IGNORECASE)) > 0
+	def arrangeImported(self, item):
+		number = re.findall('\d+ ', item)
+		imported = re.findall('imported ', item, flags=re.IGNORECASE)
+		try:
+			if len(number) > 0:
+				return item.replace(imported[0], '', 1).replace(number[0], number[0] + imported[0], 1)
+			return imported[0] + item.replace(imported[0], '', 1)
+		except:
+			return item
 
 	def roundToFive(self, number):
 		twoDecimalPrecision = (number * 100) % 10
@@ -53,27 +62,18 @@ class taxCalculator(object):
 			return number
 		return number - twoDecimalPrecision / 100 + (0.05 if twoDecimalPrecision < 5 else 0.1)
 
-	def replaceAt(self, item):
-		return item.replace(' at ', ': ', 1)
-
-	def clear(self):
-		self.items = []
-		self.taxedItems = []
-		self.salesTaxes = 0.0
-		self.total = 0.0
-
 	def numberToString(self, numb):
 		return str("%.2f" % numb)
 
-	def arrangeImported(self, item):
-		number = re.findall('\d+ ', item)
-		imported = re.findall('imported ', item, flags=re.IGNORECASE)
-		try:
-			if len(number) > 0:
-				return item.replace(imported[0], '', 1).replace(number[0], number[0] + imported[0], 1)
-			return imported[0] + item.replace('', imported[0], 1)
-		except:
-			return item
+	def replaceAt(self, item):
+		return item.replace(' at ', ': ', 1)
+
+	def mustBeTaxed(self, item):
+		freeTaxRE = 'books?|chocolates?|headache|pills?'
+		return len(re.findall(freeTaxRE, item, flags=re.IGNORECASE)) == 0
+
+	def isImported(self, item):
+		return len(re.findall('imported', item, flags=re.IGNORECASE)) > 0
 
 # UnitTest for the class taxCalculator
 class taxTest(unittest.TestCase):
