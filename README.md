@@ -108,3 +108,6 @@ So at the end you will have the item like ```1 imported box of chocolates: 11.85
 ### Remember that:
 If you run *calculateTax()* the array of taxed items will have at the end the two lines for **Sales Taxes** and **Total**.
 The method *clear()* will clear all items
+
+## License
+Normal MIT (see LICENsE file)
