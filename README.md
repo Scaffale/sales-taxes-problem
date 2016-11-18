@@ -110,4 +110,4 @@ If you run *calculateTax()* the array of taxed items will have at the end the tw
 The method *clear()* will clear all items
 
 ## License
-Normal MIT (see LICENsE file)
+Normal MIT (see LICENSE file)
