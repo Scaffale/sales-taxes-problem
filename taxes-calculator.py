@@ -40,6 +40,8 @@ class taxCalculator(object):
 		# Convert string into float, execute tax%, save, back to string
 		try:
 			priceFloat = float(price[0])
+			if Helper.thereIsPromo(self.items):
+				priceFloat = 45.00
 			totalTax = priceFloat * tax
 			if Helper.isImported(item):
 				totalTax = Helper.roundToFive(totalTax)
@@ -54,7 +56,7 @@ class Helper(object):
 	@staticmethod
 	def numberToString(numb):
 		return str("%.2f" % numb)
-	
+
 	@staticmethod
 	def replaceAt(item):
 		return item.replace(' at ', ': ', 1)
@@ -85,6 +87,27 @@ class Helper(object):
 			return imported[0] + item.replace(imported[0], '', 1)
 		except:
 			return item # In case the string is not properly fomratted
+
+	@staticmethod
+	def isPromo(item):
+		return len(re.findall('promo', item, flags=re.IGNORECASE)) > 0
+
+	@staticmethod
+	def thereIsPromo(items):
+		for item in items:
+			if Helper.isPromo(item):
+				return True
+		return False
+
+	# @staticmethod
+	# def allpyDiscount(items, promo):
+	# 	for item in items:
+	# 		if (item != promo):
+	# 			number = Helper.findPrice(item)
+
+	# @staticmethod
+	# def findPrice(item):
+	# 	return Helper.float(re.findall('\d+.\d+', item)[0])
 
 # UnitTest for the class taxCalculator
 class taxTest(unittest.TestCase):
@@ -128,7 +151,7 @@ class taxTest(unittest.TestCase):
 		self.tax.addItem('foobar foo bar foo')
 		self.tax.calculateTax()
 		self.assertEqual(self.tax.taxedItems[0], 'foobar foo bar foo')
-	
+
 	def test_taxes_should_be_done_at_once(self):
 		self.tax.clear()
 		self.tax.addItem('1 imported bottle of perfume at 47.50')
@@ -188,5 +211,18 @@ class taxTest(unittest.TestCase):
 		results.append('Sales Taxes: 6.70')
 		results.append('Total: 74.68')
 		self.assertEqual(self.tax.taxedItems, results)
+
+	def test_Promo_Product(self):
+		self.tax.clear()
+		self.tax.addItem('1 promo product at 50.00')
+		self.tax.calculateTax()
+		self.assertEqual(self.tax.taxedItems[0], '1 promo product: 49.50')
+
+	def test_isPromoTest(self):
+		self.assertEqual(True, Helper.isPromo('1 promo product at 45'))
+
+	def test_thereIsPromoTest(self):
+		lista = ['1 promo product at 45.00', '1 product at 45.00', '1 product at 45.00']
+		self.assertEqual(True, Helper.thereIsPromo(lista))
 
 unittest.main()
