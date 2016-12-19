@@ -41,7 +41,7 @@ class taxCalculator(object):
 		try:
 			priceFloat = float(price[0])
 			if Helper.thereIsPromo(self.items):
-				priceFloat = 45.00
+				priceFloat *= .9
 			totalTax = priceFloat * tax
 			if Helper.isImported(item):
 				totalTax = Helper.roundToFive(totalTax)
