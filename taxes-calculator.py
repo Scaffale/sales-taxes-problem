@@ -40,7 +40,9 @@ class taxCalculator(object):
 		# Convert string into float, execute tax%, save, back to string
 		try:
 			priceFloat = float(price[0])
-			if Helper.thereIsPromo(self.items):
+			if Helper.thereIsPromo(self.items) and Helper.isPromo(item) == False:
+				priceFloat *= .9
+			if Helper.thereIsPromo(self.items) and len(self.items) == 1:
 				priceFloat *= .9
 			totalTax = priceFloat * tax
 			if Helper.isImported(item):
@@ -225,4 +227,15 @@ class taxTest(unittest.TestCase):
 		lista = ['1 promo product at 45.00', '1 product at 45.00', '1 product at 45.00']
 		self.assertEqual(True, Helper.thereIsPromo(lista))
 
+	def test_Promo_doppio(self):
+		self.tax.clear()
+		self.tax.addItem('1 promo product at 50.00')
+		self.tax.addItem('1 music CD at 14.99')
+		self.tax.calculateTax()
+		results = []
+		results.append('1 promo product: 55.00')
+		results.append('1 music CD: 14.84')
+		results.append('Sales Taxes: 6.35')
+		results.append('Total: 69.84')
+		self.assertEqual(self.tax.taxedItems, results)
 unittest.main()
